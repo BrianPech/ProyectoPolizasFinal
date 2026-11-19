@@ -1,0 +1,9 @@
+target/
+.DS_Store
+*.log
+db.properties
+.env
+nbproject/private/
+.idea/
+*.iml
+.vscode/
