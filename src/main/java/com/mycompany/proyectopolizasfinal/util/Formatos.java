@@ -88,6 +88,19 @@ public final class Formatos {
                 fecha.getYear());
     }
 
+    /** Inverso de {@link #formatearFechaCorta(LocalDate)}: "05 Mar 2026" → 2026-03-05 (null si no se reconoce). */
+    public static LocalDate parsearFechaCorta(String texto) {
+        String clave = claveOrdenFecha(texto);
+        if (clave == null || !clave.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(clave);
+        } catch (java.time.format.DateTimeParseException ex) {
+            return null;
+        }
+    }
+
     public static String claveOrdenFecha(String texto) {
         if (texto == null) {
             return "";

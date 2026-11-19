@@ -51,6 +51,16 @@ public final class ConexionBD {
         }
     }
 
+    /** Intenta abrir y cerrar una conexión; devuelve el error si falla o vacío si todo está bien. */
+    public java.util.Optional<String> probarConexion() {
+        try (Connection con = abrirConexion()) {
+            return con.isValid(3) ? java.util.Optional.empty()
+                    : java.util.Optional.of("La conexión con MySQL no respondió.");
+        } catch (PersistenciaException | SQLException ex) {
+            return java.util.Optional.of(ex.getMessage());
+        }
+    }
+
     private static Properties cargarProperties() {
         Properties props = new Properties();
         Path local = Path.of("db.properties");

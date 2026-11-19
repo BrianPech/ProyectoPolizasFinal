@@ -46,6 +46,24 @@ public abstract class BaseRepositorioJdbc {
         return lista.isEmpty() ? Optional.empty() : Optional.of(lista.get(0));
     }
 
+    /** Ejecuta un SELECT que devuelve un solo entero (ej. un id); vacío si no hay filas o es NULL. */
+    protected final Optional<Integer> consultarEntero(String sql, Object... params) {
+        return consultarUno(sql, rs -> {
+            int v = rs.getInt(1);
+            return rs.wasNull() ? null : v;
+        }, params).filter(v -> v != null);
+    }
+
+    /** Igual que {@link #consultarEntero} pero lanza un error legible si no encuentra el registro. */
+    protected final int requerirId(String mensajeSiNoExiste, String sql, Object... params) {
+        return consultarEntero(sql, params)
+                .orElseThrow(() -> new PersistenciaException(mensajeSiNoExiste));
+    }
+
+    protected static String vacioANull(String s) {
+        return (s == null || s.isBlank()) ? null : s.trim();
+    }
+
     protected final int ejecutarInsertConId(String sql, Object... params) {
         try (Connection con = conexionBD.abrirConexion();
              PreparedStatement ps = preparar(con, sql, true, params)) {

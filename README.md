@@ -19,6 +19,21 @@ En Windows puedes instalarlo con Winget o Chocolatey, o abrir directamente el pr
 winget install Apache.Maven
 ```
 
+## Base de datos (MySQL / XAMPP)
+
+1. Enciende **MySQL** desde el panel de XAMPP.
+2. Crea la base ejecutando [`database/polizas_db.sql`](database/polizas_db.sql) (en phpMyAdmin → *Importar*, o por consola):
+   ```bash
+   mysql -u root < database/polizas_db.sql
+   ```
+   > ⚠️ El script hace `DROP DATABASE IF EXISTS polizas_db`: borra la base y la vuelve a crear vacía (con roles, tipos de póliza, coberturas y marcas iniciales).
+3. Copia `db.properties.example` como `db.properties` en la raíz del proyecto y ajusta usuario/contraseña si no usas el `root` sin contraseña de XAMPP. `db.properties` está en `.gitignore`, cada quien tiene el suyo.
+4. Ejecuta la app. Si no logra conectarse, avisa con un diálogo y trabaja con datos en memoria.
+
+**Primer acceso:** con la tabla `usuario` vacía, el login deja entrar con cualquier usuario y contraseña para crear al primer administrador en el módulo *Usuarios*. A partir de ahí se valida la contraseña (se guarda con hash PBKDF2, nunca en texto plano).
+
+**Orden para capturar datos:** las pólizas se ligan por texto a registros existentes, así que primero da de alta la **aseguradora** (Catálogos), el **cliente** y el **vehículo**. En el asistente de pólizas escribe el cliente con su nombre completo o RFC, y el vehículo con sus placas o VIN (ej. `Nissan Versa · ABC-123`). En Pagos y Avisos, la póliza se indica con su número (ej. `POL-2026-0142 · Juan Pérez`).
+
 ## Instalar dependencias de Maven
 
 Desde la raíz del proyecto, descarga e instala todas las dependencias declaradas en `pom.xml`:
@@ -43,7 +58,7 @@ mvn compile
 - `com.formdev:flatlaf` (3.7.2) y `flatlaf-extras` (3.7.2) — Tema moderno e íconos SVG.
 - `com.formdev:flatlaf-fonts-inter` (4.1) y `flatlaf-fonts-roboto` (2.137) — Tipografías.
 - `com.github.librepdf:openpdf` (3.0.5) — Exportación de reportes a PDF.
-- `com.mysql:mysql-connector-j` (8.0.33) — Driver JDBC para conexión futura a MySQL.
+- `com.mysql:mysql-connector-j` (8.0.33) — Driver JDBC para la conexión a MySQL.
 - `org.junit.jupiter:junit-jupiter` (5.11.4) — Pruebas unitarias.
 
 ## Ejecutar pruebas y aplicación
@@ -65,7 +80,7 @@ mvn compile exec:java
 ## Estructura del proyecto
 
 - `modelo/` — Records de dominio (`Cliente`, `Vehiculo`, `Poliza`, `MovimientoPago`, `CatalogoItem`, `Usuario`, `Reporte`, `Cancelacion`).
-- `repositorio/` — Contratos (`RepositorioCrud`, `UsuarioRepositorio`), implementación inicial en memoria y puente JDBC (`repositorio/jdbc/ConexionBD.java`, `BaseRepositorioJdbc.java`) listo para conectar MySQL según `db_scheme.md`.
+- `repositorio/` — Contratos (`RepositorioCrud`, `UsuarioRepositorio`), implementación en memoria e implementaciones JDBC para MySQL (`repositorio/jdbc/`: `ConexionBD`, `BaseRepositorioJdbc` y un `*RepositorioJdbc` por módulo).
 - `controlador/` — Controladores MVC desacoplados de Swing (`ControladorSesion`, `ControladorInicio`, `ControladorPolizas`, etc.).
 - `vistas/` y `componentes/` — Interfaces Swing, `PanelListadoBase`, `ModalFormularioBase` y `TablaOperativa`.
 - `util/` — Utilidades multiplataforma (`EstiloUI`) y formateo (`Formatos`).
