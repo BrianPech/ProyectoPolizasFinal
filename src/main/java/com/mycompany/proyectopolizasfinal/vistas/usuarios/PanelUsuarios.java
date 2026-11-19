@@ -88,12 +88,12 @@ public class PanelUsuarios extends PanelListadoBase<Usuario> {
                 existente,
                 username -> controlador.existeUsername(username, existente),
                 enfocarPassword,
-                guardado -> {
+                (guardado, password) -> {
                     if (existente == null) {
-                        controlador.guardar(guardado);
+                        controlador.guardar(guardado, password);
                         tabTodos.setSelected(true);
                     } else {
-                        controlador.actualizar(guardado);
+                        controlador.actualizar(guardado, password);
                     }
                     recargarTabla();
                 }).setVisible(true);

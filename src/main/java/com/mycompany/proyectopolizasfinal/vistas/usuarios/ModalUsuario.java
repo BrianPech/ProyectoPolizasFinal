@@ -5,7 +5,7 @@ import com.mycompany.proyectopolizasfinal.componentes.ModalFormularioBase;
 import com.mycompany.proyectopolizasfinal.modelo.Usuario;
 import java.awt.Window;
 import java.util.Arrays;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import javax.swing.JComboBox;
 import javax.swing.JPasswordField;
@@ -16,7 +16,8 @@ import javax.swing.JTextField;
  */
 public class ModalUsuario extends ModalFormularioBase {
 
-    private final Consumer<Usuario> onGuardar;
+    /** Recibe el usuario y la contraseña capturada (null si no se cambió). */
+    private final BiConsumer<Usuario, char[]> onGuardar;
     private final Usuario existente;
     private final Predicate<String> usuarioDuplicado;
 
@@ -29,7 +30,7 @@ public class ModalUsuario extends ModalFormularioBase {
 
     public ModalUsuario(Window owner, Usuario existente,
             Predicate<String> usuarioDuplicado, boolean enfocarPassword,
-            Consumer<Usuario> onGuardar) {
+            BiConsumer<Usuario, char[]> onGuardar) {
         super(owner,
                 existente == null ? "Nuevo Usuario" : (enfocarPassword ? "Restablecer Contraseña" : "Editar Usuario"),
                 existente == null ? "Registrar usuario" : (enfocarPassword ? "Restablecer contraseña" : "Editar usuario y rol"),
@@ -92,8 +93,10 @@ public class ModalUsuario extends ModalFormularioBase {
                 return mostrarError("Las contraseñas no coinciden.", txtConfirmar);
             }
         }
-        Arrays.fill(pass, '\0');
         Arrays.fill(confirm, '\0');
+        if (!capturaPass) {
+            Arrays.fill(pass, '\0');
+        }
 
         String rol = (String) cmbRol.getSelectedItem();
         String descRol = "Administrador".equals(rol)
@@ -101,16 +104,20 @@ public class ModalUsuario extends ModalFormularioBase {
                 : "Emisión, renovaciones y cobros";
         int polizas = existente != null ? existente.polizasGestionadas() : 0;
 
-        if (onGuardar != null) {
-            onGuardar.accept(new Usuario(
-                    existente != null ? existente.id() : 0,
-                    nombre,
-                    user,
-                    rol,
-                    descRol,
-                    polizas,
-                    (String) cmbEstado.getSelectedItem()
-            ));
+        try {
+            if (onGuardar != null) {
+                onGuardar.accept(new Usuario(
+                        existente != null ? existente.id() : 0,
+                        nombre,
+                        user,
+                        rol,
+                        descRol,
+                        polizas,
+                        (String) cmbEstado.getSelectedItem()
+                ), capturaPass ? pass : null);
+            }
+        } finally {
+            Arrays.fill(pass, '\0');
         }
         return true;
     }

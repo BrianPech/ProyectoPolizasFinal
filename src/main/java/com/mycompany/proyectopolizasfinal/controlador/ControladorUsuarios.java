@@ -45,6 +45,20 @@ public class ControladorUsuarios extends ControladorListado<Usuario> {
         return usuarioRepositorio.existeUsername(username, excluirId);
     }
 
+    /** Guarda un usuario nuevo y, si se capturó, su contraseña. */
+    public Usuario guardar(Usuario usuario, char[] password) {
+        Usuario guardado = guardar(usuario);
+        usuarioRepositorio.establecerPassword(guardado.id(), password);
+        return guardado;
+    }
+
+    /** Actualiza el usuario y, si se capturó una nueva contraseña, la reemplaza. */
+    public Usuario actualizar(Usuario usuario, char[] password) {
+        Usuario actualizado = actualizar(usuario);
+        usuarioRepositorio.establecerPassword(actualizado.id(), password);
+        return actualizado;
+    }
+
     public Usuario alternarEstado(Usuario usuario) {
         String nuevoEstado = "Activo".equalsIgnoreCase(usuario.estado()) ? "Inactivo" : "Activo";
         return actualizar(usuario.conEstado(nuevoEstado));

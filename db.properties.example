@@ -1,0 +1,5 @@
+# Copia este archivo como "db.properties" (en la raíz del proyecto) y ajusta tus datos.
+# db.properties está en .gitignore: cada quien tiene el suyo y no se sube a GitHub.
+db.url=jdbc:mysql://localhost:3306/polizas_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Mexico_City&characterEncoding=UTF-8
+db.user=root
+db.password=

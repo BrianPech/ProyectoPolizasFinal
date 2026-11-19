@@ -1,6 +1,7 @@
 package com.mycompany.proyectopolizasfinal.controlador;
 
 import com.mycompany.proyectopolizasfinal.modelo.Usuario;
+import com.mycompany.proyectopolizasfinal.repositorio.ContextoSesion;
 import com.mycompany.proyectopolizasfinal.repositorio.UsuarioRepositorio;
 import java.util.Optional;
 
@@ -33,8 +34,10 @@ public class ControladorSesion {
 
         String username = raw.contains("@") ? raw.substring(0, raw.indexOf('@')) : raw;
         if (usuarioRepositorio.listar().isEmpty()) {
+            // Acceso inicial: aún no hay cuentas; permite entrar para dar de alta al primer administrador.
             this.usuarioActual = new Usuario(
                     0, username, username, "Administrador", "Acceso inicial", 0, "Activo");
+            ContextoSesion.limpiar();
             return Optional.empty();
         }
 
@@ -46,9 +49,12 @@ public class ControladorSesion {
         if (!"Activo".equalsIgnoreCase(u.estado())) {
             return Optional.of("La cuenta está inactiva. Contacta al administrador.");
         }
+        if (!usuarioRepositorio.verificarPassword(u.username(), password)) {
+            return Optional.of("Contraseña incorrecta.");
+        }
 
-        // shortcut: sin BD todavía no hay contrasena_hash; al conectar MySQL validar hash aquí.
         this.usuarioActual = u;
+        ContextoSesion.establecer(u.id());
         return Optional.empty();
     }
 
@@ -58,5 +64,6 @@ public class ControladorSesion {
 
     public void cerrarSesion() {
         this.usuarioActual = null;
+        ContextoSesion.limpiar();
     }
 }
